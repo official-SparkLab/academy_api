@@ -43,26 +43,66 @@ class HomeController extends Controller
      */
     public function store(Request $request)
     {
-        try
-        {
-        $home=Home::create($request->all());
-        return response()->json([
-            'message'=>'Data Added Successfully',
-            'status'=>'Success',
-            'data'=>Home::get()
-
-        ]);
-    }catch(Exception $e)
-    {
-        return response()->json([
-            'message'=>"Exception Occured".$e->getMessage(),
-            'Status'=>'Failed',
-            ''
-        ]);
-
+        try {
+            // Validate the request
+            $request->validate([
+                'image_url'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'photo'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'section'    => 'required|string|max:255',
+                'added_by'   => 'required|string|max:255',
+                'reg_id'     => 'required|string|max:255',
+            ]);
+    
+            // Define upload directory
+            $uploadPath = 'uploads/Home/';
+    
+            // Handle image_url upload
+            $imageUrlPath = null;
+            if ($request->hasFile('image_url')) {
+                $imageFile = $request->file('image_url');
+                $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
+                $imageFile->move(public_path($uploadPath), $uniqueImageName);
+                $imageUrlPath = $uploadPath . $uniqueImageName;
+            }
+    
+            // Handle photo upload
+            $photoPath = null;
+            if ($request->hasFile('photo')) {
+                $photoFile = $request->file('photo');
+                $uniquePhotoName = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
+                $photoFile->move(public_path($uploadPath), $uniquePhotoName);
+                $photoPath = $uploadPath . $uniquePhotoName;
+            }
+    
+            // Save data in the database
+            $home = Home::create([
+                'image_url'      => $imageUrlPath, // Store image URL
+                'photo'          => $photoPath, // Store photo path
+                'heading_small'  => $request->input('heading_small'),
+                'heading_medium' => $request->input('heading_medium'),
+                'heading_large'  => $request->input('heading_large'),
+                'button_label'   => $request->input('button_label'),
+                'destination_url'=> $request->input('destination_url'),
+                'description'    => $request->input('description'),
+                'icon'           => $request->input('icon'),
+                'section'        => $request->input('section'),
+                'added_by'       => $request->input('added_by'),
+                'reg_id'         => $request->input('reg_id'),
+            ]);
+    
+            return response()->json([
+                'message' => 'Data Added Successfully',
+                'status'  => 'Success',
+                'data'    => $home
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => "Exception Occurred: " . $e->getMessage(),
+                'status'  => 'Failed',
+            ]);
+        }
     }
-
-    }
+    
 
     /**
      * Display the specified resource.
@@ -83,16 +123,111 @@ class HomeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            // Find the existing record
+            $home = Home::findOrFail($id);
+    
+            // Validate the request
+            $request->validate([
+                'image_url'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'photo'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'section'    => 'required|string|max:255',
+                'added_by'   => 'required|string|max:255',
+                'reg_id'     => 'required|string|max:255',
+            ]);
+    
+            // Define upload directory
+            $uploadPath = 'uploads/Home/';
+    
+            // Handle image_url update
+            if ($request->hasFile('image_url')) {
+                // Delete old image if exists
+                if ($home->image_url && file_exists(public_path($home->image_url))) {
+                    unlink(public_path($home->image_url));
+                }
+    
+                $imageFile = $request->file('image_url');
+                $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
+                $imageFile->move(public_path($uploadPath), $uniqueImageName);
+                $home->image_url = $uploadPath . $uniqueImageName;
+            }
+    
+            // Handle photo update
+            if ($request->hasFile('photo')) {
+                // Delete old photo if exists
+                if ($home->photo && file_exists(public_path($home->photo))) {
+                    unlink(public_path($home->photo));
+                }
+    
+                $photoFile = $request->file('photo');
+                $uniquePhotoName = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
+                $photoFile->move(public_path($uploadPath), $uniquePhotoName);
+                $home->photo = $uploadPath . $uniquePhotoName;
+            }
+    
+            // Update other fields
+            $home->heading_small   = $request->input('heading_small');
+            $home->heading_medium  = $request->input('heading_medium');
+            $home->heading_large   = $request->input('heading_large');
+            $home->button_label    = $request->input('button_label');
+            $home->destination_url = $request->input('destination_url');
+            $home->description     = $request->input('description');
+            $home->icon            = $request->input('icon');
+            $home->section         = $request->input('section');
+            $home->added_by        = $request->input('added_by');
+            $home->reg_id          = $request->input('reg_id');
+    
+            // Save the updated data
+            $home->save();
+    
+            return response()->json([
+                'message' => 'Data Updated Successfully',
+                'status'  => 'Success',
+                'data'    => $home
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => "Exception Occurred: " . $e->getMessage(),
+                'status'  => 'Failed',
+            ]);
+        }
     }
+    
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy($id)
+{
+    try {
+        // Find the existing record
+        $home = Home::findOrFail($id);
+
+        // Delete image_url if exists
+        if ($home->image_url && file_exists(public_path($home->image_url))) {
+            unlink(public_path($home->image_url));
+        }
+
+        // Delete photo if exists
+        if ($home->photo && file_exists(public_path($home->photo))) {
+            unlink(public_path($home->photo));
+        }
+
+        // Delete the record from the database
+        $home->delete();
+
+        return response()->json([
+            'message' => 'Data Deleted Successfully',
+            'status'  => 'Success'
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => "Exception Occurred: " . $e->getMessage(),
+            'status'  => 'Failed',
+        ]);
     }
+}
+
 }
