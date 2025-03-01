@@ -7,6 +7,6 @@ use App\Http\Controllers\AboutController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
+    
 Route::resource('home',HomeController::class);
 Route::resource('about',AboutController::class);
