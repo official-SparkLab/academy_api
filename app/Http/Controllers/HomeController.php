@@ -44,14 +44,7 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validate the request
-            $request->validate([
-                'image_url'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'photo'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'section'    => 'required|string|max:255',
-                'added_by'   => 'required|string|max:255',
-                'reg_id'     => 'required|string|max:255',
-            ]);
+           
     
             // Define upload directory
             $uploadPath = 'uploads/Home/';
@@ -129,14 +122,7 @@ class HomeController extends Controller
             // Find the existing record
             $home = Home::findOrFail($id);
     
-            // Validate the request
-            $request->validate([
-                'image_url'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'photo'      => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'section'    => 'required|string|max:255',
-                'added_by'   => 'required|string|max:255',
-                'reg_id'     => 'required|string|max:255',
-            ]);
+           
     
             // Define upload directory
             $uploadPath = 'uploads/Home/';
