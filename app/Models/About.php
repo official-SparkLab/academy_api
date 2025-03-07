@@ -21,6 +21,7 @@ class About extends Model
         'photo',
         'section',
         'added_by',
-        'reg_id'
+        'reg_id',
+        'sub_section'
     ];
 }
