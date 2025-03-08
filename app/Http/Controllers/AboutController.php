@@ -73,6 +73,7 @@ class AboutController extends Controller
                 'image_url'      => $imageUrlPath, // Store image URL
                 'photo'          => $photoPath, // Store photo path
                 'heading_small'  => $request->input('heading_small'),
+                'sub_section'  => $request->input('sub_section'),
                 'heading_medium' => $request->input('heading_medium'),
                 'heading_large'  => $request->input('heading_large'),
                 'button_label'   => $request->input('button_label'),
@@ -152,6 +153,7 @@ class AboutController extends Controller
 
         // Update other fields
         $about->heading_small  = $request->input('heading_small');
+        $about->sub_section  = $request->input('sub_section');
         $about->heading_medium = $request->input('heading_medium');
         $about->heading_large  = $request->input('heading_large');
         $about->button_label   = $request->input('button_label');
