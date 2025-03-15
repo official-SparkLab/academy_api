@@ -72,6 +72,7 @@ class CourseController extends Controller
                 'sub_section'    => $request->input('sub_section'),
                 'added_by'       => $request->input('added_by'),
                 'reg_id'         => $request->input('reg_id'),
+                'course'         => $request->input('course'),
             ]);
 
             return response()->json(['message' => 'Data Added Successfully', 'status' => 'Success', 'data' => $course], 201);

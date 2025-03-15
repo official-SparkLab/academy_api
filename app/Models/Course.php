@@ -10,6 +10,7 @@ class Course extends Model
     protected $primarykey="id";
 
     protected $fillable=[
+        'course',
         'image_url',
         'heading_small',
         'heading_medium',
