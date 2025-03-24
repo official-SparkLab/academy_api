@@ -20,3 +20,4 @@ Route::resource('contact',ContactController::class);
 Route::resource('contact-enquiry',ContactEnquiryController::class);
 Route::resource('gallery',GalleryController::class);
 Route::resource('faculty',FacultyController::class);
+Route::resource('course',CourseController::class);
