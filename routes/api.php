@@ -9,6 +9,8 @@ use App\Http\Controllers\ContactEnquiryController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\ResultSectionController;
+use App\Http\Controllers\ResultController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,3 +23,5 @@ Route::resource('contact-enquiry',ContactEnquiryController::class);
 Route::resource('gallery',GalleryController::class);
 Route::resource('faculty',FacultyController::class);
 Route::resource('course',CourseController::class);
+Route::resource('result-section',ResultSectionController::class);
+Route::resource('result',ResultController::class);
