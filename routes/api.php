@@ -25,4 +25,4 @@ Route::resource('faculty',FacultyController::class);
 Route::resource('course',CourseController::class);
 Route::resource('result-section',ResultSectionController::class);
 Route::resource('result',ResultController::class);
-Route::delete('about/{id}', [AboutController::class, 'destroy']);
+
