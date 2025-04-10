@@ -34,4 +34,6 @@ Route::resource('recruitment',RecruitmentController::class);
 
 
 Route::resource('signup',SignupController::class);
+Route::post('/admin-login', [SignupController::class, 'login']);
+
 

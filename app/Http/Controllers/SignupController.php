@@ -150,4 +150,52 @@ class SignupController extends Controller
             ], 500);
         }
     }
+
+    public function login(Request $request)
+{
+    try {
+        $username = $request->username;
+        $password = $request->password;
+
+        // Static admin login
+        if ($username === 'Admin' && $password === 'admin@gmail.com') {
+            return response()->json([
+                'message' => 'Login successful',
+                'status'  => 'Success',
+                'data'    => [
+                   'reg_id' => '0',
+                    'added_by' => 'Admin'
+                ]
+            ]);
+        }
+
+        // DB check for other users
+        $user = Signup::where('username', $username)
+                      ->where('password', $password)
+                      ->first();
+
+        if ($user) {
+            return response()->json([
+                'message' => 'Login successful',
+                'status'  => 'Success',
+                'data'    => [
+                    'reg_id' => $user->id,
+                    'added_by' => $user->full_name
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Invalid credentials',
+                'status'  => 'Error',
+                'data'    => null
+            ], 401);
+        }
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => 'Login failed',
+            'status'  => 'Error',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 }
