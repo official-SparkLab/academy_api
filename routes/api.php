@@ -14,6 +14,7 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SignupController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\RecruitmentController;
+use App\Http\Controllers\FeedbackController;
 
 
 Route::get('/user', function (Request $request) {
@@ -31,6 +32,7 @@ Route::resource('result-section',ResultSectionController::class);
 Route::resource('result',ResultController::class);
 Route::resource('chatbot',ChatbotController::class);
 Route::resource('recruitment',RecruitmentController::class);
+Route::resource('feedback',FeedbackController::class);
 
 
 Route::resource('signup',SignupController::class);
