@@ -13,7 +13,8 @@ class Chatbot extends Model
         'question',
         'answer',
         'designation',
-        'question_type'
+        'question_type',
+        
       
     ];
 }
