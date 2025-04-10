@@ -11,6 +11,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\ResultSectionController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\SignupController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -25,4 +26,6 @@ Route::resource('faculty',FacultyController::class);
 Route::resource('course',CourseController::class);
 Route::resource('result-section',ResultSectionController::class);
 Route::resource('result',ResultController::class);
+
+Route::resource('signup',SignupController::class);
 
