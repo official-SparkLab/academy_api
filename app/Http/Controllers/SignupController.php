@@ -188,7 +188,7 @@ class SignupController extends Controller
                 'message' => 'Invalid credentials',
                 'status'  => 'Error',
                 'data'    => null
-            ], 401);
+            ]);
         }
     } catch (Exception $e) {
         return response()->json([
