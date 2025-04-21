@@ -41,7 +41,11 @@ class ContactEnquiryController extends Controller
     public function store(Request $request)
     {
         try {
-            $home = ContactEnquiry::create($request->all());
+            $data = $request->all();
+            $data['status'] = $request->input('status', 'Pending'); // Use 'Pending' if status is not set
+        
+            $home = ContactEnquiry::create($data);
+        
             return response()->json([
                 'message' => 'Data Added Successfully',
                 'status'  => 'Success',
@@ -53,6 +57,7 @@ class ContactEnquiryController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+        
     }
 
     /**
@@ -78,7 +83,9 @@ class ContactEnquiryController extends Controller
     {
         try {
             $home = ContactEnquiry::findOrFail($id);
-            $home->update($request->all());
+        
+            $home->update($request->only(['status', 'reg_id', 'added_by']));
+        
             return response()->json([
                 'message' => 'Data Updated Successfully',
                 'status'  => 'Success',
@@ -90,6 +97,7 @@ class ContactEnquiryController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+        
     }
 
 

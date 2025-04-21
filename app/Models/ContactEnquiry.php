@@ -17,7 +17,10 @@ class ContactEnquiry extends Model
         'state',
         'class',
         'stream',
-        'comments'
+        'comments',
+        'status',
+        'reg_id',
+        'added_by'
       
     ];
 }
