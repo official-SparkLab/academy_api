@@ -44,11 +44,8 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         try {
-           
-    
-            // Define upload directory
             $uploadPath = 'uploads/Home/';
-    
+        
             // Handle image_url upload
             $imageUrlPath = null;
             if ($request->hasFile('image_url')) {
@@ -57,7 +54,7 @@ class HomeController extends Controller
                 $imageFile->move(public_path($uploadPath), $uniqueImageName);
                 $imageUrlPath = $uploadPath . $uniqueImageName;
             }
-    
+        
             // Handle photo upload
             $photoPath = null;
             if ($request->hasFile('photo')) {
@@ -66,23 +63,32 @@ class HomeController extends Controller
                 $photoFile->move(public_path($uploadPath), $uniquePhotoName);
                 $photoPath = $uploadPath . $uniquePhotoName;
             }
-    
+        
+            // Handle icon upload
+            $iconPath = null;
+            if ($request->hasFile('icon')) {
+                $iconFile = $request->file('icon');
+                $uniqueIconName = time() . '_icon_' . uniqid() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($uploadPath), $uniqueIconName);
+                $iconPath = $uploadPath . $uniqueIconName;
+            }
+        
             // Save data in the database
             $home = Home::create([
-                'image_url'      => $imageUrlPath, // Store image URL
-                'photo'          => $photoPath, // Store photo path
+                'image_url'      => $imageUrlPath,
+                'photo'          => $photoPath,
+                'icon'           => $iconPath,
                 'heading_small'  => $request->input('heading_small'),
                 'heading_medium' => $request->input('heading_medium'),
                 'heading_large'  => $request->input('heading_large'),
                 'button_label'   => $request->input('button_label'),
                 'destination_url'=> $request->input('destination_url'),
                 'description'    => $request->input('description'),
-                'icon'           => $request->input('icon'),
                 'section'        => $request->input('section'),
                 'added_by'       => $request->input('added_by'),
                 'reg_id'         => $request->input('reg_id'),
             ]);
-    
+        
             return response()->json([
                 'message' => 'Data Added Successfully',
                 'status'  => 'Success',
@@ -94,6 +100,7 @@ class HomeController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+        
     }
     
 
@@ -121,38 +128,46 @@ class HomeController extends Controller
         try {
             // Find the existing record
             $home = Home::findOrFail($id);
-    
-           
-    
+        
             // Define upload directory
             $uploadPath = 'uploads/Home/';
-    
+        
             // Handle image_url update
             if ($request->hasFile('image_url')) {
-                // Delete old image if exists
                 if ($home->image_url && file_exists(public_path($home->image_url))) {
                     unlink(public_path($home->image_url));
                 }
-    
+        
                 $imageFile = $request->file('image_url');
                 $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
                 $imageFile->move(public_path($uploadPath), $uniqueImageName);
                 $home->image_url = $uploadPath . $uniqueImageName;
             }
-    
+        
             // Handle photo update
             if ($request->hasFile('photo')) {
-                // Delete old photo if exists
                 if ($home->photo && file_exists(public_path($home->photo))) {
                     unlink(public_path($home->photo));
                 }
-    
+        
                 $photoFile = $request->file('photo');
                 $uniquePhotoName = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
                 $photoFile->move(public_path($uploadPath), $uniquePhotoName);
                 $home->photo = $uploadPath . $uniquePhotoName;
             }
-    
+        
+            // Handle icon update
+            if ($request->hasFile('icon')) {
+                if ($home->icon && file_exists(public_path($home->icon))) {
+                    unlink(public_path($home->icon));
+                }
+        
+                $iconFile = $request->file('icon');
+                $uniqueIconName = time() . '_icon_' . uniqid() . '.' . $iconFile->getClientOriginalExtension();
+                $iconFile->move(public_path($uploadPath), $uniqueIconName);
+                $home->icon = $uploadPath . $uniqueIconName;
+            }
+        
             // Update other fields
             $home->heading_small   = $request->input('heading_small');
             $home->heading_medium  = $request->input('heading_medium');
@@ -160,14 +175,13 @@ class HomeController extends Controller
             $home->button_label    = $request->input('button_label');
             $home->destination_url = $request->input('destination_url');
             $home->description     = $request->input('description');
-            $home->icon            = $request->input('icon');
             $home->section         = $request->input('section');
             $home->added_by        = $request->input('added_by');
             $home->reg_id          = $request->input('reg_id');
-    
+        
             // Save the updated data
             $home->save();
-    
+        
             return response()->json([
                 'message' => 'Data Updated Successfully',
                 'status'  => 'Success',
@@ -179,6 +193,7 @@ class HomeController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+        
     }
     
 
@@ -190,20 +205,25 @@ class HomeController extends Controller
     try {
         // Find the existing record
         $home = Home::findOrFail($id);
-
+    
         // Delete image_url if exists
         if ($home->image_url && file_exists(public_path($home->image_url))) {
             unlink(public_path($home->image_url));
         }
-
+    
         // Delete photo if exists
         if ($home->photo && file_exists(public_path($home->photo))) {
             unlink(public_path($home->photo));
         }
-
+    
+        // Delete icon if exists
+        if ($home->icon && file_exists(public_path($home->icon))) {
+            unlink(public_path($home->icon));
+        }
+    
         // Delete the record from the database
         $home->delete();
-
+    
         return response()->json([
             'message' => 'Data Deleted Successfully',
             'status'  => 'Success'
@@ -214,6 +234,7 @@ class HomeController extends Controller
             'status'  => 'Failed',
         ]);
     }
+    
 }
 
 }

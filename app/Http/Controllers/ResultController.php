@@ -48,6 +48,7 @@ class ResultController extends Controller
             // Save data in the database
             $result = Result::create([
                 'section'      => $request->input('section'),
+                'result_year'  => $request->input('result_year'),
                 'sub_section'  => $request->input('sub_section'),
                 'image'        => $imagePath,
                 'name'         => $request->input('name'),
@@ -104,33 +105,34 @@ class ResultController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $result = Result::find($id);
-
-            if (!$result) {
-                return response()->json([
-                    'message' => 'Result not found',
-                    'status'  => 'Failed',
-                ]);
-            }
-
-            // Handle file upload (if new image is provided)
+            // Find the existing record
+            $result = Result::findOrFail($id);
+        
+            // Handle image update
             if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($result->image && file_exists(public_path($this->uploadPath . basename($result->image)))) {
+                    unlink(public_path($result->image));
+                }
+        
                 $imageFile = $request->file('image');
                 $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
                 $imageFile->move(public_path($this->uploadPath), $uniqueImageName);
                 $result->image = $this->uploadPath . $uniqueImageName;
             }
-
-            // Update data
-            $result->update([
-                'section'      => $request->input('section', $result->section),
-                'sub_section'  => $request->input('sub_section', $result->sub_section),
-                'name'         => $request->input('name', $result->name),
-                'description'  => $request->input('description', $result->description),
-                'added_by'     => $request->input('added_by', $result->added_by),
-                'reg_id'       => $request->input('reg_id', $result->reg_id),
-            ]);
-
+        
+            // Update other fields
+            $result->section      = $request->input('section');
+            $result->result_year  = $request->input('result_year');
+            $result->sub_section  = $request->input('sub_section');
+            $result->name         = $request->input('name');
+            $result->description  = $request->input('description');
+            $result->added_by     = $request->input('added_by');
+            $result->reg_id       = $request->input('reg_id');
+        
+            // Save the updated record
+            $result->save();
+        
             return response()->json([
                 'message' => 'Result updated successfully',
                 'status'  => 'Success',
@@ -142,6 +144,7 @@ class ResultController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+        
     }  
 
     /**

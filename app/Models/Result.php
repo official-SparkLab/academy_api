@@ -8,5 +8,5 @@ class Result extends Model
 {
     protected $table="result";
     protected $primarykey="id";
-    protected $fillable = ['section', 'sub_section','image','name','description', 'added_by', 'reg_id'];
+    protected $fillable = ['section', 'result_year','sub_section','image','name','description', 'added_by', 'reg_id'];
 }
