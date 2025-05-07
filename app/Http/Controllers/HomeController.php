@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Home;
+use Illuminate\Support\Facades\DB;
 class HomeController extends Controller
 {
     /**
@@ -235,6 +236,34 @@ class HomeController extends Controller
         ]);
     }
     
+}
+
+
+public function Dashboard()
+{
+
+    try {
+        $data = DB::select("
+            SELECT 
+                (SELECT COUNT(*) FROM ContactEnquiry) AS total_enquiries,
+                (SELECT COUNT(*) FROM ContactEnquiry WHERE status = 'Pending') AS pending_enquiries,
+                (SELECT COUNT(*) FROM ContactEnquiry WHERE status = 'Complete') AS complete_enquiries,
+                (SELECT COUNT(*) FROM Signup) AS total_signups
+        ");
+
+        return response()->json([
+            'message' => 'Counts fetched successfully',
+            'status' => 'Success',
+            'data' => $data[0] // only one row expected
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => 'Exception occurred: ' . $e->getMessage(),
+            'status' => 'Failed'
+        ]);
+    }
+
 }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Exception;
+use Carbon\Carbon;
 use App\Models\ContactEnquiry;
 class ContactEnquiryController extends Controller
 {
@@ -119,5 +120,24 @@ class ContactEnquiryController extends Controller
                 'status'  => 'Failed',
             ]);
         }
+    }
+
+    public function getTodaysEnquiry()
+    {
+        try {
+            $enquiries = ContactEnquiry::whereDate('created_at', Carbon::today())->get();
+    
+            return response()->json([
+                'message' => 'Today\'s enquiries fetched successfully',
+                'status' => 'Success',
+                'data' => $enquiries
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Exception occurred: ' . $e->getMessage(),
+                'status' => 'Failed'
+            ]);
+        }
+
     }
 }

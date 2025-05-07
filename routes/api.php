@@ -37,5 +37,6 @@ Route::resource('feedback',FeedbackController::class);
 
 Route::resource('signup',SignupController::class);
 Route::post('/admin-login', [SignupController::class, 'login']);
-
+Route::GET('/dashboard',[HomeController::class,'Dashboard']);
+Route::GET("/todays-enquiry",[ContactEnquiryController::class,'getTodaysEnquiry']);
 
