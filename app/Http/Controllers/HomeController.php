@@ -45,8 +45,10 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         try {
+
+
             $uploadPath = 'uploads/Home/';
-        
+            
             // Handle image_url upload
             $imageUrlPath = null;
             if ($request->hasFile('image_url')) {
