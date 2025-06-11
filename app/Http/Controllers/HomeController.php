@@ -5,29 +5,30 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Home;
 use Illuminate\Support\Facades\DB;
+use Exception;
+use Illuminate\Support\Facades\Cache;
 class HomeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        try
-        {
-            $home=Home::get();
+        try {
+            
+            $home = Cache::rememberForever('home_data', function () {
+                return Home::get();
+            });
+
             return response()->json([
-                'message'=>'Home Data Fethced',
-                'status'=>'Success',
-                'data'=>$home
+                'message' => 'Home Data Fetched',
+                'status' => 'Success',
+                'data' => $home
             ]);
 
-        }catch(Exception $e)
-        {
+        } catch (Exception $e) {
             return response()->json([
-                'message'=>'Exception Occured'.$e.getMessage(),
-                'status'=>'Failed'
+                'message' => 'Exception Occurred: ' . $e->getMessage(),
+                'status' => 'Failed'
             ]);
-
         }
     }
 
@@ -48,7 +49,7 @@ class HomeController extends Controller
 
 
             $uploadPath = 'uploads/Home/';
-            
+
             // Handle image_url upload
             $imageUrlPath = null;
             if ($request->hasFile('image_url')) {
@@ -57,7 +58,7 @@ class HomeController extends Controller
                 $imageFile->move(public_path($uploadPath), $uniqueImageName);
                 $imageUrlPath = $uploadPath . $uniqueImageName;
             }
-        
+
             // Handle photo upload
             $photoPath = null;
             if ($request->hasFile('photo')) {
@@ -66,7 +67,7 @@ class HomeController extends Controller
                 $photoFile->move(public_path($uploadPath), $uniquePhotoName);
                 $photoPath = $uploadPath . $uniquePhotoName;
             }
-        
+
             // Handle icon upload
             $iconPath = null;
             if ($request->hasFile('icon')) {
@@ -75,37 +76,39 @@ class HomeController extends Controller
                 $iconFile->move(public_path($uploadPath), $uniqueIconName);
                 $iconPath = $uploadPath . $uniqueIconName;
             }
-        
+
             // Save data in the database
             $home = Home::create([
-                'image_url'      => $imageUrlPath,
-                'photo'          => $photoPath,
-                'icon'           => $iconPath,
-                'heading_small'  => $request->input('heading_small'),
+                'image_url' => $imageUrlPath,
+                'photo' => $photoPath,
+                'icon' => $iconPath,
+                'heading_small' => $request->input('heading_small'),
                 'heading_medium' => $request->input('heading_medium'),
-                'heading_large'  => $request->input('heading_large'),
-                'button_label'   => $request->input('button_label'),
-                'destination_url'=> $request->input('destination_url'),
-                'description'    => $request->input('description'),
-                'section'        => $request->input('section'),
-                'added_by'       => $request->input('added_by'),
-                'reg_id'         => $request->input('reg_id'),
+                'heading_large' => $request->input('heading_large'),
+                'button_label' => $request->input('button_label'),
+                'destination_url' => $request->input('destination_url'),
+                'description' => $request->input('description'),
+                'section' => $request->input('section'),
+                'added_by' => $request->input('added_by'),
+                'reg_id' => $request->input('reg_id'),
             ]);
-        
+
+            Cache::forget('home_data'); // Cache instantly cleared
+
             return response()->json([
                 'message' => 'Data Added Successfully',
-                'status'  => 'Success',
-                'data'    => $home
+                'status' => 'Success',
+                'data' => $home
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => "Exception Occurred: " . $e->getMessage(),
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
-        
+
     }
-    
+
 
     /**
      * Display the specified resource.
@@ -131,121 +134,124 @@ class HomeController extends Controller
         try {
             // Find the existing record
             $home = Home::findOrFail($id);
-        
+
             // Define upload directory
             $uploadPath = 'uploads/Home/';
-        
+
             // Handle image_url update
             if ($request->hasFile('image_url')) {
                 if ($home->image_url && file_exists(public_path($home->image_url))) {
                     unlink(public_path($home->image_url));
                 }
-        
+
                 $imageFile = $request->file('image_url');
                 $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
                 $imageFile->move(public_path($uploadPath), $uniqueImageName);
                 $home->image_url = $uploadPath . $uniqueImageName;
             }
-        
+
             // Handle photo update
             if ($request->hasFile('photo')) {
                 if ($home->photo && file_exists(public_path($home->photo))) {
                     unlink(public_path($home->photo));
                 }
-        
+
                 $photoFile = $request->file('photo');
                 $uniquePhotoName = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
                 $photoFile->move(public_path($uploadPath), $uniquePhotoName);
                 $home->photo = $uploadPath . $uniquePhotoName;
             }
-        
+
             // Handle icon update
             if ($request->hasFile('icon')) {
                 if ($home->icon && file_exists(public_path($home->icon))) {
                     unlink(public_path($home->icon));
                 }
-        
+
                 $iconFile = $request->file('icon');
                 $uniqueIconName = time() . '_icon_' . uniqid() . '.' . $iconFile->getClientOriginalExtension();
                 $iconFile->move(public_path($uploadPath), $uniqueIconName);
                 $home->icon = $uploadPath . $uniqueIconName;
             }
-        
+
             // Update other fields
-            $home->heading_small   = $request->input('heading_small');
-            $home->heading_medium  = $request->input('heading_medium');
-            $home->heading_large   = $request->input('heading_large');
-            $home->button_label    = $request->input('button_label');
+            $home->heading_small = $request->input('heading_small');
+            $home->heading_medium = $request->input('heading_medium');
+            $home->heading_large = $request->input('heading_large');
+            $home->button_label = $request->input('button_label');
             $home->destination_url = $request->input('destination_url');
-            $home->description     = $request->input('description');
-            $home->section         = $request->input('section');
-            $home->added_by        = $request->input('added_by');
-            $home->reg_id          = $request->input('reg_id');
-        
+            $home->description = $request->input('description');
+            $home->section = $request->input('section');
+            $home->added_by = $request->input('added_by');
+            $home->reg_id = $request->input('reg_id');
+
             // Save the updated data
             $home->save();
-        
+
+             Cache::forget('home_data'); // Cache instantly cleared
             return response()->json([
                 'message' => 'Data Updated Successfully',
-                'status'  => 'Success',
-                'data'    => $home
+                'status' => 'Success',
+                'data' => $home
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => "Exception Occurred: " . $e->getMessage(),
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
-        
+
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)
-{
-    try {
-        // Find the existing record
-        $home = Home::findOrFail($id);
-    
-        // Delete image_url if exists
-        if ($home->image_url && file_exists(public_path($home->image_url))) {
-            unlink(public_path($home->image_url));
+    {
+        try {
+            // Find the existing record
+            $home = Home::findOrFail($id);
+
+            // Delete image_url if exists
+            if ($home->image_url && file_exists(public_path($home->image_url))) {
+                unlink(public_path($home->image_url));
+            }
+
+            // Delete photo if exists
+            if ($home->photo && file_exists(public_path($home->photo))) {
+                unlink(public_path($home->photo));
+            }
+
+            // Delete icon if exists
+            if ($home->icon && file_exists(public_path($home->icon))) {
+                unlink(public_path($home->icon));
+            }
+
+            // Delete the record from the database
+            $home->delete();
+
+             Cache::forget('home_data'); // Cache instantly cleared
+
+            return response()->json([
+                'message' => 'Data Deleted Successfully',
+                'status' => 'Success'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => "Exception Occurred: " . $e->getMessage(),
+                'status' => 'Failed',
+            ]);
         }
-    
-        // Delete photo if exists
-        if ($home->photo && file_exists(public_path($home->photo))) {
-            unlink(public_path($home->photo));
-        }
-    
-        // Delete icon if exists
-        if ($home->icon && file_exists(public_path($home->icon))) {
-            unlink(public_path($home->icon));
-        }
-    
-        // Delete the record from the database
-        $home->delete();
-    
-        return response()->json([
-            'message' => 'Data Deleted Successfully',
-            'status'  => 'Success'
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => "Exception Occurred: " . $e->getMessage(),
-            'status'  => 'Failed',
-        ]);
+
     }
-    
-}
 
 
-public function Dashboard()
-{
+    public function Dashboard()
+    {
 
-    try {
-        $data = DB::select("
+        try {
+            $data = DB::select("
             SELECT 
                 (SELECT COUNT(*) FROM ContactEnquiry) AS total_enquiries,
                 (SELECT COUNT(*) FROM ContactEnquiry WHERE status = 'Pending') AS pending_enquiries,
@@ -253,19 +259,19 @@ public function Dashboard()
                 (SELECT COUNT(*) FROM Signup) AS total_signups
         ");
 
-        return response()->json([
-            'message' => 'Counts fetched successfully',
-            'status' => 'Success',
-            'data' => $data[0] // only one row expected
-        ]);
+            return response()->json([
+                'message' => 'Counts fetched successfully',
+                'status' => 'Success',
+                'data' => $data[0] // only one row expected
+            ]);
 
-    } catch (Exception $e) {
-        return response()->json([
-            'message' => 'Exception occurred: ' . $e->getMessage(),
-            'status' => 'Failed'
-        ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Exception occurred: ' . $e->getMessage(),
+                'status' => 'Failed'
+            ]);
+        }
+
     }
-
-}
 
 }

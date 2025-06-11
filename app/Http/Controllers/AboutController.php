@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Exception;
 use App\Models\About;
+use Illuminate\Support\Facades\Cache;
 class AboutController extends Controller
 {
     /**
@@ -12,23 +13,26 @@ class AboutController extends Controller
      */
     public function index()
     {
-        try
-        {
-            $about=About::get();
-            return response()->json([
-                'message'=>'About Data Fetched',
-                'status'=>'Success',
-                'data'=>$about
-            ]);
-        }catch(Exception $e)
-        {
+       try {
+    $about = Cache::rememberForever('about_data', function () {
+        return About::get();
+    });
 
-            return response()->json([
-                'message'=>'Exception Occured'.$e.getMessage(),
-                'status'=>'Failed'
+    return response()->json([
+        'message' => 'About Data Fetched',
+        'status' => 'Success',
+        'data' => $about
+    ]);
 
-            ]);
-        }
+} catch (Exception $e) {
+
+    return response()->json([
+        'message' => 'Exception Occurred: ' . $e->getMessage(),
+        'status' => 'Failed'
+    ]);
+
+}
+
     }
 
     /**
@@ -84,6 +88,7 @@ class AboutController extends Controller
                 'added_by'       => $request->input('added_by'),
                 'reg_id'         => $request->input('reg_id'),
             ]);
+             Cache::forget('about_data'); // Cache instantly cleared
     
             return response()->json([
                 'message' => 'Data Added Successfully',
@@ -166,7 +171,7 @@ class AboutController extends Controller
 
         // Save the changes
         $about->save();
-
+      Cache::forget('about_data'); // Cache instantly cleared
         return response()->json([
             'message' => 'Data Updated Successfully',
             'status'  => 'Success',
@@ -203,7 +208,7 @@ class AboutController extends Controller
     
             // Delete the record from the database
             $about->delete();
-    
+          Cache::forget('about_data'); // Cache instantly cleared
             return response()->json([
                 'message' => 'Record Deleted Successfully',
                 'status'  => 'Success'

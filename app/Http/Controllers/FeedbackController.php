@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Support\Facades\Cache;
 
 class FeedbackController extends Controller
 {
@@ -15,18 +15,21 @@ class FeedbackController extends Controller
     public function index()
     {
         try {
-            $data = Feedback::all();
+            $data = Cache::rememberForever('feedback_data', function () {
+                return Feedback::all();
+            });
 
             return response()->json([
                 'message' => 'Results fetched successfully',
-                'status'  => 'Success',
-                'data'    => $data
+                'status' => 'Success',
+                'data' => $data
             ]);
+
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch data',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -47,21 +50,23 @@ class FeedbackController extends Controller
         try {
             $feedback = Feedback::create([
                 'question' => $request->question,
-                'answer'   => $request->answer,
+                'answer' => $request->answer,
                 'feedback' => $request->feedback,
-                'reason'   => $request->reason,
+                'reason' => $request->reason,
             ]);
+
+            Cache::forget("feedback_data");
 
             return response()->json([
                 'message' => 'Feedback submitted successfully',
-                'status'  => 'Success',
-                'data'    => $feedback
+                'status' => 'Success',
+                'data' => $feedback
             ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to submit feedback',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -76,14 +81,14 @@ class FeedbackController extends Controller
 
             return response()->json([
                 'message' => 'Feedback fetched successfully',
-                'status'  => 'Success',
-                'data'    => $data
+                'status' => 'Success',
+                'data' => $data
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Feedback not found',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 404);
         }
     }
@@ -106,21 +111,21 @@ class FeedbackController extends Controller
 
             $feedback->update([
                 'question' => $request->question,
-                'answer'   => $request->answer,
+                'answer' => $request->answer,
                 'feedback' => $request->feedback,
-                'reason'   => $request->reason,
+                'reason' => $request->reason,
             ]);
-
+            Cache::forget('feedback_data');
             return response()->json([
                 'message' => 'Feedback updated successfully',
-                'status'  => 'Success',
-                'data'    => $feedback
+                'status' => 'Success',
+                'data' => $feedback
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to update feedback',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -133,17 +138,18 @@ class FeedbackController extends Controller
         try {
             $feedback = Feedback::findOrFail($id);
             $feedback->delete();
+            Cache::forget('feedback_data');
 
             return response()->json([
                 'message' => 'Feedback deleted successfully',
-                'status'  => 'Success',
-                'data'    => null
+                'status' => 'Success',
+                'data' => null
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete feedback',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

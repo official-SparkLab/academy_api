@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ResultSection;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Support\Facades\Cache;
 class ResultSectionController extends Controller
 {
     /**
@@ -14,12 +14,16 @@ class ResultSectionController extends Controller
     public function index()
     {
         try {
-            $home = ResultSection::all();
+            $home = Cache::rememberForever('result_section_data', function () {
+                return ResultSection::all();
+            });
+
             return response()->json([
                 'message' => 'Data Fetched',
                 'status' => 'Success',
                 'data' => $home
             ]);
+
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
@@ -43,11 +47,15 @@ class ResultSectionController extends Controller
     {
         try {
             $home = ResultSection::create($request->all());
+            Cache::forget('result_section_data');
+
             return response()->json([
                 'message' => 'Data Stored Successfully',
                 'status' => 'Success',
                 'data' => $home
             ]);
+
+           
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
@@ -63,6 +71,7 @@ class ResultSectionController extends Controller
     {
         try {
             $home = ResultSection::findOrFail($id);
+            
             return response()->json([
                 'message' => 'Data Retrieved Successfully',
                 'status' => 'Success',
@@ -92,6 +101,8 @@ class ResultSectionController extends Controller
         try {
             $home = ResultSection::findOrFail($id);
             $home->update($request->all());
+            Cache::forget('result_section_data');
+
             return response()->json([
                 'message' => 'Data Updated Successfully',
                 'status' => 'Success',
@@ -113,6 +124,8 @@ class ResultSectionController extends Controller
         try {
             $home = ResultSection::findOrFail($id);
             $home->delete();
+            Cache::forget('result_section_data');
+
             return response()->json([
                 'message' => 'Data Deleted Successfully',
                 'status' => 'Success'

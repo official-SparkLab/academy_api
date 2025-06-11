@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 class CourseController extends Controller
 {
     /**
@@ -13,11 +14,15 @@ class CourseController extends Controller
     public function index()
     {
         try {
-            $courses = Course::all();
-            return response()->json($courses, 200);
-        } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
-        }
+    $courses = Cache::rememberForever('course_data', function () {
+        return Course::all();
+    });
+
+    return response()->json($courses, 200);
+
+} catch (Exception $e) {
+    return response()->json(['message' => $e->getMessage()], 500);
+}
     }
 
     /**
@@ -75,6 +80,8 @@ class CourseController extends Controller
                 'course'         => $request->input('course'),
             ]);
 
+            Cache::forget("course_data");
+
             return response()->json(['message' => 'Data Added Successfully', 'status' => 'Success', 'data' => $course], 201);
         } catch (Exception $e) {
             return response()->json(['message' => "Exception Occurred: " . $e->getMessage(), 'status' => 'Failed'], 500);
@@ -129,7 +136,7 @@ class CourseController extends Controller
 
             // Update other fields
             $course->update($request->except(['image_url', 'photo']));
-
+Cache::forget("course_data");
             return response()->json(['message' => 'Data Updated Successfully', 'status' => 'Success', 'data' => $course], 200);
         } catch (Exception $e) {
             return response()->json(['message' => "Exception Occurred: " . $e->getMessage(), 'status' => 'Failed'], 500);
@@ -144,6 +151,7 @@ class CourseController extends Controller
         try {
             $course = Course::findOrFail($id);
             $course->delete();
+            Cache::forget("course_data");
             return response()->json(['message' => 'Data Deleted Successfully', 'status' => 'Success'], 200);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);

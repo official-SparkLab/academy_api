@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Recruitment;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Support\Facades\Cache;
 class RecruitmentController extends Controller
 {
     /**
@@ -14,18 +14,21 @@ class RecruitmentController extends Controller
     public function index()
     {
         try {
-            $data = Recruitment::all();
+            $data = Cache::rememberForever('recruitment_data', function () {
+                return Recruitment::all();
+            });
 
             return response()->json([
                 'message' => 'Data fetched successfully',
-                'status'  => 'Success',
-                'data'    => $data
+                'status' => 'Success',
+                'data' => $data
             ]);
+
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch data',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -45,32 +48,33 @@ class RecruitmentController extends Controller
     {
         try {
             $recruitment = Recruitment::create([
-                'job_title'        => $request->job_title,
-                'about_job'        => $request->about_job,
-                'qualification'    => $request->qualification,
-                'total_vacancies'  => $request->total_vacancies,
+                'job_title' => $request->job_title,
+                'about_job' => $request->about_job,
+                'qualification' => $request->qualification,
+                'total_vacancies' => $request->total_vacancies,
                 'total_experience' => $request->total_experience,
-                'department'       => $request->department,
-                'age_limit'        => $request->age_limit,
-                'work_place'       => $request->work_place,
+                'department' => $request->department,
+                'age_limit' => $request->age_limit,
+                'work_place' => $request->work_place,
                 'apply_start_date' => $request->apply_start_date,
-                'apply_last_date'  => $request->apply_last_date,
-                'mobile_no'        => $request->mobile_no,
-                'apply_link'       => $request->apply_link,
-                'added_by'       => $request->added_by,
-                'reg_id'       => $request->reg_id,
+                'apply_last_date' => $request->apply_last_date,
+                'mobile_no' => $request->mobile_no,
+                'apply_link' => $request->apply_link,
+                'added_by' => $request->added_by,
+                'reg_id' => $request->reg_id,
             ]);
 
+            Cache::forget('recruitment_data');
             return response()->json([
                 'message' => 'Recruitment entry created successfully',
-                'status'  => 'Success',
-                'data'    => $recruitment
+                'status' => 'Success',
+                'data' => $recruitment
             ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to create entry',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -85,14 +89,14 @@ class RecruitmentController extends Controller
 
             return response()->json([
                 'message' => 'Entry fetched successfully',
-                'status'  => 'Success',
-                'data'    => $data
+                'status' => 'Success',
+                'data' => $data
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Entry not found',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 404);
         }
     }
@@ -114,32 +118,34 @@ class RecruitmentController extends Controller
             $recruitment = Recruitment::findOrFail($id);
 
             $recruitment->update([
-                'job_title'        => $request->job_title,
-                'about_job'        => $request->about_job,
-                'qualification'    => $request->qualification,
-                'total_vacancies'  => $request->total_vacancies,
+                'job_title' => $request->job_title,
+                'about_job' => $request->about_job,
+                'qualification' => $request->qualification,
+                'total_vacancies' => $request->total_vacancies,
                 'total_experience' => $request->total_experience,
-                'department'       => $request->department,
-                'age_limit'        => $request->age_limit,
-                'work_place'       => $request->work_place,
+                'department' => $request->department,
+                'age_limit' => $request->age_limit,
+                'work_place' => $request->work_place,
                 'apply_start_date' => $request->apply_start_date,
-                'apply_last_date'  => $request->apply_last_date,
-                'mobile_no'        => $request->mobile_no,
-                'apply_link'       => $request->apply_link,
-                'added_by'       => $request->added_by,
-                'reg_id'       => $request->reg_id,
+                'apply_last_date' => $request->apply_last_date,
+                'mobile_no' => $request->mobile_no,
+                'apply_link' => $request->apply_link,
+                'added_by' => $request->added_by,
+                'reg_id' => $request->reg_id,
             ]);
+
+            Cache::forget('recruitment_data');
 
             return response()->json([
                 'message' => 'Recruitment entry updated successfully',
-                'status'  => 'Success',
-                'data'    => $recruitment
+                'status' => 'Success',
+                'data' => $recruitment
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to update entry',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -152,17 +158,18 @@ class RecruitmentController extends Controller
         try {
             $recruitment = Recruitment::findOrFail($id);
             $recruitment->delete();
+            Cache::forget('recruitment_data');
 
             return response()->json([
                 'message' => 'Recruitment entry deleted successfully',
-                'status'  => 'Success',
-                'data'    => null
+                'status' => 'Success',
+                'data' => null
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete entry',
-                'status'  => 'Error',
-                'error'   => $e->getMessage()
+                'status' => 'Error',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

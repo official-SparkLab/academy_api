@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Faculty;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 class FacultyController extends Controller
 {
     /**
@@ -13,16 +14,20 @@ class FacultyController extends Controller
     public function index()
     {
         try {
-            $faculties = Faculty::all();
+            $faculties = Cache::rememberForever('faculty_data', function () {
+                return Faculty::all();
+            });
+
             return response()->json([
                 'message' => 'Data Retrieved Successfully',
-                'status'  => 'Success',
-                'data'    => $faculties
+                'status' => 'Success',
+                'data' => $faculties
             ], 200);
+
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed'
+                'status' => 'Failed'
             ], 500);
         }
     }
@@ -53,25 +58,27 @@ class FacultyController extends Controller
             }
 
             $faculty = Faculty::create([
-                'department'   => $request->input('department'),
-                'photo'        => $photoPath,
-                'title'        => $request->input('title'),
-                'name'         => $request->input('name'),
-                'designation'  => $request->input('designation'),
-                'experience'   => $request->input('experience'),
-                'added_by'     => $request->input('added_by'),
-                'reg_id'       => $request->input('reg_id'),
+                'department' => $request->input('department'),
+                'photo' => $photoPath,
+                'title' => $request->input('title'),
+                'name' => $request->input('name'),
+                'designation' => $request->input('designation'),
+                'experience' => $request->input('experience'),
+                'added_by' => $request->input('added_by'),
+                'reg_id' => $request->input('reg_id'),
             ]);
+
+            Cache::forget(key: 'faculty_data'); // Cache instantly cleared
 
             return response()->json([
                 'message' => 'Faculty Added Successfully',
-                'status'  => 'Success',
-                'data'    => $faculty
+                'status' => 'Success',
+                'data' => $faculty
             ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed'
+                'status' => 'Failed'
             ], 500);
         }
     }
@@ -85,13 +92,13 @@ class FacultyController extends Controller
             $faculty = Faculty::findOrFail($id);
             return response()->json([
                 'message' => 'Faculty Retrieved Successfully',
-                'status'  => 'Success',
-                'data'    => $faculty
+                'status' => 'Success',
+                'data' => $faculty
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed'
+                'status' => 'Failed'
             ], 500);
         }
     }
@@ -123,25 +130,26 @@ class FacultyController extends Controller
             }
 
             $faculty->update([
-                'department'   => $request->input('department'),
-                'photo'        => $photoPath,
-                'title'        => $request->input('title'),
-                'name'         => $request->input('name'),
-                'designation'  => $request->input('designation'),
-                'experience'   => $request->input('experience'),
-                'added_by'     => $request->input('added_by'),
-                'reg_id'       => $request->input('reg_id'),
+                'department' => $request->input('department'),
+                'photo' => $photoPath,
+                'title' => $request->input('title'),
+                'name' => $request->input('name'),
+                'designation' => $request->input('designation'),
+                'experience' => $request->input('experience'),
+                'added_by' => $request->input('added_by'),
+                'reg_id' => $request->input('reg_id'),
             ]);
 
+            Cache::forget(key: 'faculty_data'); // Cache instantly cleared
             return response()->json([
                 'message' => 'Faculty Updated Successfully',
-                'status'  => 'Success',
-                'data'    => $faculty
+                'status' => 'Success',
+                'data' => $faculty
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed'
+                'status' => 'Failed'
             ], 500);
         }
     }
@@ -154,14 +162,15 @@ class FacultyController extends Controller
         try {
             $faculty = Faculty::findOrFail($id);
             $faculty->delete();
+            Cache::forget(key: 'faculty_data'); // Cache instantly cleared
             return response()->json([
                 'message' => 'Faculty Deleted Successfully',
-                'status'  => 'Success'
+                'status' => 'Success'
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed'
+                'status' => 'Failed'
             ], 500);
         }
     }

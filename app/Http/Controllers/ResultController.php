@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Result;
 use Illuminate\Http\Request;
 use Exception;
-
+use Illuminate\Support\Facades\Cache;
 class ResultController extends Controller
 {
     private $uploadPath = 'uploads/result/';
@@ -14,12 +14,24 @@ class ResultController extends Controller
      */
     public function index()
     {
-        $results = Result::all();
-        return response()->json([
-            'message' => 'Results fetched successfully',
-            'status'  => 'Success',
-            'data'    => $results
-        ]);
+        try {
+            $results = Cache::rememberForever('result_data', function () {
+                return Result::all();
+            });
+
+            return response()->json([
+                'message' => 'Results fetched successfully',
+                'status' => 'Success',
+                'data' => $results
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch data',
+                'status' => 'Error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -47,25 +59,26 @@ class ResultController extends Controller
 
             // Save data in the database
             $result = Result::create([
-                'section'      => $request->input('section'),
-                'result_year'  => $request->input('result_year'),
-                'sub_section'  => $request->input('sub_section'),
-                'image'        => $imagePath,
-                'name'         => $request->input('name'),
-                'description'  => $request->input('description'),
-                'added_by'     => $request->input('added_by'),
-                'reg_id'       => $request->input('reg_id'),
+                'section' => $request->input('section'),
+                'result_year' => $request->input('result_year'),
+                'sub_section' => $request->input('sub_section'),
+                'image' => $imagePath,
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'added_by' => $request->input('added_by'),
+                'reg_id' => $request->input('reg_id'),
             ]);
 
+            Cache::forget('result_data');
             return response()->json([
                 'message' => 'Result added successfully',
-                'status'  => 'Success',
-                'data'    => $result
+                'status' => 'Success',
+                'data' => $result
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
     }
@@ -80,14 +93,14 @@ class ResultController extends Controller
         if (!$result) {
             return response()->json([
                 'message' => 'Result not found',
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
 
         return response()->json([
             'message' => 'Result fetched successfully',
-            'status'  => 'Success',
-            'data'    => $result
+            'status' => 'Success',
+            'data' => $result
         ]);
     }
 
@@ -107,45 +120,46 @@ class ResultController extends Controller
         try {
             // Find the existing record
             $result = Result::findOrFail($id);
-        
+
             // Handle image update
             if ($request->hasFile('image')) {
                 // Delete old image if exists
                 if ($result->image && file_exists(public_path($this->uploadPath . basename($result->image)))) {
                     unlink(public_path($result->image));
                 }
-        
+
                 $imageFile = $request->file('image');
                 $uniqueImageName = time() . '_img_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
                 $imageFile->move(public_path($this->uploadPath), $uniqueImageName);
                 $result->image = $this->uploadPath . $uniqueImageName;
             }
-        
+
             // Update other fields
-            $result->section      = $request->input('section');
-            $result->result_year  = $request->input('result_year');
-            $result->sub_section  = $request->input('sub_section');
-            $result->name         = $request->input('name');
-            $result->description  = $request->input('description');
-            $result->added_by     = $request->input('added_by');
-            $result->reg_id       = $request->input('reg_id');
-        
+            $result->section = $request->input('section');
+            $result->result_year = $request->input('result_year');
+            $result->sub_section = $request->input('sub_section');
+            $result->name = $request->input('name');
+            $result->description = $request->input('description');
+            $result->added_by = $request->input('added_by');
+            $result->reg_id = $request->input('reg_id');
+
             // Save the updated record
             $result->save();
-        
+            Cache::forget('result_data');
+
             return response()->json([
                 'message' => 'Result updated successfully',
-                'status'  => 'Success',
-                'data'    => $result
+                'status' => 'Success',
+                'data' => $result
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
-        
-    }  
+
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -158,20 +172,21 @@ class ResultController extends Controller
             if (!$result) {
                 return response()->json([
                     'message' => 'Result not found',
-                    'status'  => 'Failed',
+                    'status' => 'Failed',
                 ]);
             }
 
             $result->delete();
+            Cache::forget('result_data');
 
             return response()->json([
                 'message' => 'Result deleted successfully',
-                'status'  => 'Success',
+                'status' => 'Success',
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Exception Occurred: ' . $e->getMessage(),
-                'status'  => 'Failed',
+                'status' => 'Failed',
             ]);
         }
     }
